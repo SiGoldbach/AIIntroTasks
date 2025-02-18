@@ -1,0 +1,98 @@
+from collections import deque
+
+
+class Graph:
+    def __init__(self):
+        self.graph = {}
+    def add_node(self,node):
+        if node.node_id not in self.graph:
+            self.graph[node.node_id] = {"node": node, "edges": []}
+
+    def add_edge(self, id1, id2):
+        """Creates an edge between two nodes using their IDs."""
+        if id1 in self.graph and id2 in self.graph:
+            self.graph[id1]["edges"].append(self.graph[id2]["node"])
+            self.graph[id2]["edges"].append(self.graph[id1]["node"])
+
+    def display(self):
+        """Displays the adjacency list with objects."""
+        for node_id, node_data in self.graph.items():
+            print(f"{node_data['node']} -> {node_data['edges']}")
+
+    def bfs(self,start_id,end_id):
+        if start_id not in self.graph or end_id not in self.graph:
+            print("Start Node not found")
+            return None
+
+        queue = deque([self.graph[start_id]["node"]])
+        parents = {start_id: None}
+
+        print(len(queue))
+        while queue:
+            print("in the loop: ",len(queue))
+            frontier = queue.popleft()
+            if frontier == end_id:
+                return self.reconstruct_path(parents,start_id,end_id)
+
+            for neighbour in self.graph[frontier.node_id]["edges"]:
+                if neighbour.node_id not in parents:
+                    parents[neighbour.node_id] = frontier.node_id
+                    queue.append(neighbour.node_id)
+
+    def reconstruct_path(self, parents, start_id, target_id):
+        """Reconstructs the path from the parent dictionary."""
+        path = []
+        current_id = target_id
+
+        while current_id is not None:
+            path.append(self.graph[current_id]["node"])  # Add Node object
+            current_id = parents[current_id]  # Move to parent
+
+        return list(reversed(path))  # Reverse to get correct order
+
+
+class State:
+
+
+    def __init__(self,missionaries_left,cannibals_left,missionaries_right,cannibals_right,boat_location):
+        self.missionaries_left= missionaries_left
+        self.cannibals_left=cannibals_left
+        self.missionaries_right = missionaries_right
+        self.cannibals_right = cannibals_right
+        self.boat_location = boat_location
+    def __repr__(self):
+        if self.boat_location==0:
+            return f" [M{self.missionaries_left} C{self.cannibals_left}] BOAT -- [M{self.missionaries_right} C{self.cannibals_right}] "
+        else:
+            return f" [M{self.missionaries_left} C{self.cannibals_left}]  -- BOAT[M{self.missionaries_right} C{self.cannibals_right}] "
+
+
+class Node:
+    def __init__(self,node_id,data):
+        self.node_id = node_id
+        self.data = data
+    def __repr__(self):
+        return f"Node({self.node_id},{self.data})"
+
+
+
+
+def main():
+    state1= State(3,3,0,0,0)
+    state2= State(3,2,0,1,1)
+
+    node1 = Node(1,state1)
+    node2 = Node(2,state2)
+
+    state_space = Graph()
+    state_space.add_node(node1)
+    state_space.add_node(node2)
+    state_space.add_edge(1,2)
+    path = state_space.bfs(1,2)
+
+    print("Printing the path")
+    print(path)
+    ##state_space.display()
+    ##print(repr(node1))
+
+main()
